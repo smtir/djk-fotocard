@@ -102,6 +102,12 @@ function App() {
 
   const handleDownload = async () => {
     if (!image) return;
+    // iOS detection
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    let win;
+    if (isIOS) {
+      win = window.open(); // Open synchronously on click
+    }
     // Create a canvas and draw the uploaded image, then overlay the template
     const canvas = document.createElement('canvas');
     canvas.width = TEMPLATE_SIZE;
@@ -193,11 +199,8 @@ function App() {
     }
 
     const dataUrl = canvas.toDataURL();
-    // iOS detection
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS) {
-      // Open in new tab and show user message
-      window.open(dataUrl, '_blank');
+      win.location = dataUrl;
       alert('iPhone/iPad-এ ডাউনলোড করতে, নতুন ট্যাবে খুলে ছবির উপর ট্যাপ করে ধরে রাখুন এবং "Save Image" বেছে নিন।');
       return;
     }

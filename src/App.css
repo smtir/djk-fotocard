@@ -289,7 +289,11 @@ button,p,h1,h2,h3 {
   }
   
   .card-preview-wrapper {
-    display: none;
-    height: 0 !important;
+    /* display: none; */
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+    width: 1px !important;
+    height: 1px !important;
   }
-} 
+}
