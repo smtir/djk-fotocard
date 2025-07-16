@@ -1,3 +1,7 @@
+html, body {
+  overflow-x: hidden;
+}
+
 body {
   background: #fffbe7;
   font-family: 'Tiro Bangla', serif;
@@ -231,25 +235,59 @@ button,p,h1,h2,h3 {
   }
 }
 @media (max-width: 600px) {
-  .container, .card-preview-wrapper, .card-preview {
-    width: 100vw;
-    height: 100vw;
-    max-width: 100vw;
-    max-height: 100vw;
-    border-radius: 0;
-    padding: 4px 0 16px 0;
+  html, body {
+    overflow-x: hidden;
   }
-  .editor-section {
-    flex-direction: column !important;
-    gap: 8px !important;
-    width: 100%;
+  .container, .card-preview-wrapper, .card-preview {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 8px !important;
+    margin: 0 !important;
+    padding: 8px 8px 10px !important;
+    box-sizing: border-box;
+  }
+  .card-preview {
+    aspect-ratio: 1 / 1;
+  }
+  .editor-section, .button-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    padding: 0 4vw;
   }
   .caption-input, .date-input, .credit-input {
     width: 100% !important;
     min-width: 0 !important;
+    font-size: 0.7rem !important;
   }
-  .button-row {
-    flex-direction: column;
-    gap: 6px;
+  .footer {
+    font-size: 0.95rem;
+    padding: 8px 0;
+  }
+  .title {
+    margin: 0px;
+    margin-bottom: 5px;
+    font-size: 1rem;
+  }
+  
+  .upload-label {
+    padding: 15px 10px;
+  }
+  
+  .upload-placeholder, .formats {
+    font-size: 0.7rem;
+  }
+  
+  .blue-btn, .download-btn, .clear-btn {
+    padding: 8px;
+    font-size: 0.7rem;
+    line-height: 1rem;
+  }
+  
+  .card-preview-wrapper {
+    display: none;
   }
 } 
