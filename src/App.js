@@ -8,11 +8,11 @@ const TEMPLATE_SIZE = 1000;
 const BOX_X = 16; // px
 const BOX_Y = 32; // px
 const BOX_WIDTH = 960; // px
-const BOX_HEIGHT = 670; // px
+const BOX_HEIGHT = 650; // px
 const BOX_RADIUS = 24; // px
-const TEXT_AREA_X = BOX_X;
-const TEXT_AREA_Y = BOX_Y + BOX_HEIGHT + 5;
-const TEXT_AREA_WIDTH = 900;
+const TEXT_AREA_X = BOX_X + 10;
+const TEXT_AREA_Y = BOX_Y + BOX_HEIGHT - 70;
+const TEXT_AREA_WIDTH = 880;
 
 // Helper to wrap text for canvas
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -36,7 +36,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   return lines.length;
 }
 
-// Helper to get today's date in yyyy-mm-dd in GMT+6
+// Helper to get today's dateText in yyyy-mm-dd in GMT+6
 function getToday() {
   const now = new Date();
   // Convert to UTC milliseconds, add 6 hours for GMT+6, then get date string
@@ -61,7 +61,7 @@ function formatBanglaDate(dateStr) {
   return `${toBanglaNumber(String(Number(day)))} ${months[Number(month) - 1]} ${toBanglaNumber(year)}`;
 }
 
-  // Helper to get dynamic font size for caption
+  // Helper to get dynamic font size for captionText
   function getCaptionFontSize(text) {
     return text.length <= 120 ? '2.8rem' : '2.1rem';
   }
@@ -70,65 +70,90 @@ function formatBanglaDate(dateStr) {
   }
 
 function App() {
-  const [image, setImage] = useState(null);
-  const [caption, setCaption] = useState(defaultCaption);
-  const [date, setDate] = useState(getToday());
-  const [credit, setCredit] = useState('');
-  const [error, setError] = useState("");
-  const fileInput = useRef();
-  const cardRef = useRef();
+  const [captionText, setCaption] = useState(defaultCaption);
+  const [dateText, setDate] = useState(getToday());
+  const [creditText, setCredit] = useState('');
+  const [newsImageValue, setImage] = useState(null);
+  const newsImageFileInput = useRef();
+  const [adsImageValue, setAdImage] = useState(null);
+  const adsImageFileInput = useRef();
+  const [showDetails, setShowDetails] = useState(false);
+  const [newsImageError, setNewsImageError] = useState("");
+  const [adsImageError, setAdsImageError] = useState("");
 
-  const handleImageChange = (e) => {
+  const handleNewsImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const validTypes = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp"];
     if (!validTypes.includes(file.type)) {
-      setError("শুধুমাত্র JPG, PNG, GIF, BMP, WebP ফরম্যাট সাপোর্ট করবে");
+      setNewsImageError("শুধুমাত্র JPG, PNG, GIF, BMP, WebP ফরম্যাট সাপোর্ট করবে");
       return;
     }
-    setError("");
+    setNewsImageError("");
     const reader = new FileReader();
     reader.onload = (ev) => setImage(ev.target.result);
     reader.readAsDataURL(file);
   };
 
-  const handleDrop = (e) => {
+  const handleNewsImageDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      fileInput.current.files = e.dataTransfer.files;
-      handleImageChange({ target: { files: e.dataTransfer.files } });
+      newsImageFileInput.current.files = e.dataTransfer.files;
+      handleNewsImageChange({ target: { files: e.dataTransfer.files } });
+    }
+  };
+
+  const handleAdImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setAdsImageError("শুধুমাত্র JPG, PNG, GIF, BMP, WebP ফরম্যাট সাপোর্ট করবে");
+      return;
+    }
+    setAdsImageError("");
+    const reader = new FileReader();
+    reader.onload = (ev) => setAdImage(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleadsImageDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      adsImageFileInput.current.files = e.dataTransfer.files;
+      handleAdImageChange({ target: { files: e.dataTransfer.files } });
     }
   };
 
   const handleDownload = async () => {
-    if (!image) return;
+    if (!newsImageValue) return;
     // iOS detection
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     let win;
     if (isIOS) {
       win = window.open(); // Open synchronously on click
     }
-    // Create a canvas and draw the uploaded image, then overlay the template
+    // Create a canvas and draw the uploaded newsImageValue, then overlay the template
     const canvas = document.createElement('canvas');
     canvas.width = TEMPLATE_SIZE;
     canvas.height = TEMPLATE_SIZE;
     const ctx = canvas.getContext('2d');
 
-    // Draw the uploaded image inside the box, maintaining aspect ratio (object-fit: contain)
+    // Draw the uploaded newsImageValue inside the box, maintaining aspect ratio (object-fit: contain)
     const userImg = new window.Image();
-    userImg.src = image;
+    userImg.src = newsImageValue;
     await new Promise(resolve => { userImg.onload = resolve; });
     // Calculate object-fit: contain placement
     const boxAR = BOX_WIDTH / BOX_HEIGHT;
     const imgAR = userImg.width / userImg.height;
     let drawW = BOX_WIDTH, drawH = BOX_HEIGHT, drawX = BOX_X, drawY = BOX_Y;
     if (imgAR > boxAR) {
-      // Image is wider
+      // newsImageValue is wider
       drawW = BOX_WIDTH;
       drawH = BOX_WIDTH / imgAR;
       drawY = BOX_Y + (BOX_HEIGHT - drawH) / 2;
     } else {
-      // Image is taller
+      // newsImageValue is taller
       drawH = BOX_HEIGHT;
       drawW = BOX_HEIGHT * imgAR;
       drawX = BOX_X + (BOX_WIDTH - drawW) / 2;
@@ -159,42 +184,108 @@ function App() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     let textY = TEXT_AREA_Y;
-    // Caption
-    ctx.font = `bold ${getCaptionCanvasFontSize(caption)}px Tiro Bangla, serif`;
-    ctx.fillStyle = '#222';
-    const capLines = wrapText(ctx, caption, TEMPLATE_SIZE / 2, textY, TEXT_AREA_WIDTH - 40, getCaptionCanvasFontSize(caption) + 6);
-    textY += capLines * (getCaptionCanvasFontSize(caption) + 6) + 8;
-    // Date at template bottom left
-    ctx.font = 'bold 28px Tiro Bangla, serif';
-    ctx.fillStyle = '#222';
-    ctx.textAlign = 'left';
-    ctx.fillText(formatBanglaDate(date), 32, TEMPLATE_SIZE - 48);
-    // Credit at box bottom left with background and color
-    if (credit) {
-      ctx.font = 'bold 24px Tiro Bangla, serif';
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'left';
-      // Draw background rectangle for credit
-      const creditBgX = BOX_X + 34;
-      const creditBgY = BOX_Y + BOX_HEIGHT - 40;
-      const creditBgPaddingX = 16;
-      const creditBgPaddingY = 4;
-      const creditText = credit;
-      const creditTextWidth = ctx.measureText(creditText).width;
+    // captionText (canvas)
+    ctx.font = `bold ${getCaptionCanvasFontSize(captionText)}px Tiro Bangla, serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.save();
+    const paragraphs = captionText.split('\n');
+    let y = (!showDetails && !adsImageValue)
+    ? (BOX_Y + BOX_HEIGHT + (TEMPLATE_SIZE - (BOX_Y + BOX_HEIGHT) - 200) / 2 - 40)
+    : TEXT_AREA_Y;
+    let isFirstVisualLine = true;
+    for (let i = 0; i < paragraphs.length; i++) {
+      // Wrap paragraph into lines
+      const words = paragraphs[i].split(' ');
+      let line = '';
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + (line ? ' ' : '') + words[n];
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > TEXT_AREA_WIDTH && n > 0) {
+          // Draw the current line
+          if (isFirstVisualLine) {
+            ctx.fillStyle = '#222';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.fillText(line, TEMPLATE_SIZE / 2, y);
+            isFirstVisualLine = false;
+          } else {
+            ctx.fillStyle = 'red';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.strokeText(line, TEMPLATE_SIZE / 2, y);
+            ctx.fillText(line, TEMPLATE_SIZE / 2, y);
+          }
+          y += getCaptionCanvasFontSize(captionText) + 6;
+          line = words[n];
+        } else {
+          line = testLine;
+        }
+      }
+      // Draw the last line of the paragraph
+      if (isFirstVisualLine) {
+        ctx.fillStyle = '#222';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.fillText(line, TEMPLATE_SIZE / 2, y);
+        isFirstVisualLine = false;
+      } else {
+        ctx.fillStyle = 'red';
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeText(line, TEMPLATE_SIZE / 2, y);
+        ctx.fillText(line, TEMPLATE_SIZE / 2, y);
+      }
+      y += getCaptionCanvasFontSize(captionText) + 6;
+    }
+    ctx.restore();
+    // Show details text if checked
+    if (showDetails && adsImageValue) {
       ctx.save();
-      ctx.globalAlpha = 0.7;
+      ctx.font = 'bold 24px Tiro Bangla, serif';
       ctx.fillStyle = '#000';
-      ctx.beginPath();
-      ctx.moveTo(creditBgX, creditBgY + 8);
-      ctx.arcTo(creditBgX, creditBgY, creditBgX + creditTextWidth + creditBgPaddingX * 2, creditBgY, 8);
-      ctx.arcTo(creditBgX + creditTextWidth + creditBgPaddingX * 2, creditBgY, creditBgX + creditTextWidth + creditBgPaddingX * 2, creditBgY + 32, 8);
-      ctx.arcTo(creditBgX + creditTextWidth + creditBgPaddingX * 2, creditBgY + 32, creditBgX, creditBgY + 32, 8);
-      ctx.arcTo(creditBgX, creditBgY + 32, creditBgX, creditBgY, 8);
-      ctx.closePath();
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = '#fff';
-      ctx.fillText(creditText, creditBgX + creditBgPaddingX, creditBgY + creditBgPaddingY + 4);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('বিস্তারিত কমেন্টে...', TEMPLATE_SIZE / 2, TEMPLATE_SIZE - 165);
+      ctx.restore();
+    } else if(showDetails && !adsImageValue) {
+      ctx.save();
+      ctx.font = 'bold 24px Tiro Bangla, serif';
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('বিস্তারিত কমেন্টে...', TEMPLATE_SIZE / 2, TEMPLATE_SIZE - 45);
+      ctx.restore();
+    }
+    // dateText and creditText at the top (matching preview)
+    ctx.save();
+    if (!creditText) {
+      ctx.font = 'bold 24px Tiro Bangla, serif';
+      ctx.fillStyle = '#222';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText('তারিখ: ' + formatBanglaDate(dateText), 32, 35);
+    } else {
+      ctx.font = 'bold 16px Tiro Bangla, serif';
+      ctx.fillStyle = '#222';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText('তারিখ: ' + formatBanglaDate(dateText), 32, 20);
+
+      ctx.font = 'bold 28px Tiro Bangla, serif';
+      ctx.fillStyle = '#000';
+      ctx.fillText(creditText, 32, 38);
+    }
+    ctx.restore();
+
+    // Draw ad image at the very bottom if present
+    if (adsImageValue) {
+      const adImg = new window.Image();
+      adImg.src = adsImageValue;
+      await new Promise(resolve => { adImg.onload = resolve; });
+      // Draw ad image at the very bottom, full width, max height 100px, object-fit: contain
+      let adW = TEMPLATE_SIZE, adH = 125, adX = (TEMPLATE_SIZE - adW) / 2, adY = TEMPLATE_SIZE - (adImg.height + 39);
+      ctx.drawImage(adImg, adX, adY, adW, adH);
       ctx.restore();
     }
 
@@ -215,21 +306,23 @@ function App() {
 
   const handleClear = () => {
     setImage(null);
-    setError("");
-    fileInput.current.value = null;
+    setNewsImageError("");
+    setAdsImageError("");
+    newsImageFileInput.current.value = null;
+    adsImageFileInput.current.value = null;
   };
 
   return (
     <div className="container">
       <h1 className="title">দেশ ও জনতার কন্ঠ <span className="redlish">ফটোকার্ড সিস্টেম</span></h1>
       <div className="upload-section">
-        <label htmlFor="file-upload" className="upload-label" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
-          {image ? (
-            <img src={image} alt="Uploaded" className="preview-img" />
+        <label htmlFor="file-upload" className="upload-label" onDrop={handleNewsImageDrop} onDragOver={e => e.preventDefault()}>
+          {newsImageValue ? (
+            <img src={newsImageValue} alt="Uploaded" className="preview-img" />
           ) : (
             <div className="upload-placeholder">
               <span role="img" aria-label="camera" className="camera-icon">📷</span>
-              <div>নিচের নীল বাটনে ক্লিক করে অথবা এখানে ছবি এনে ছেড়ে দিন</div>
+              <div>নিউজের ছবি আপলোড করুন</div>
               <div className="formats">JPG, PNG, GIF, BMP, WebP ফরম্যাটের ছবিগুলা সাপোর্ট করবে</div>
             </div>
           )}
@@ -237,21 +330,46 @@ function App() {
             id="file-upload"
             type="file"
             accept="image/jpeg,image/png,image/gif,image/bmp,image/webp"
-            onChange={handleImageChange}
-            ref={fileInput}
+            onChange={handleNewsImageChange}
+            ref={newsImageFileInput}
             style={{ display: "none" }}
           />
         </label>
         <div className="button-row">
-          <button className="blue-btn" onClick={() => fileInput.current.click()}>ছবি বেছে নিন</button>
-          {image && <button className="clear-btn" onClick={handleClear}>ছবি ক্লিয়ার করুন</button>}
+          <button className="blue-btn" onClick={() => newsImageFileInput.current.click()}>ছবি বেছে নিন</button>
+          {newsImageValue && <button className="clear-btn" onClick={handleClear}>ছবি ক্লিয়ার করুন</button>}
         </div>
-        {error && <div className="error">{error}</div>}
+        {newsImageError && <div className="error">{newsImageError}</div>}
+        {/* Ad image upload UI */}
+        <div style={{ marginTop: 16 }}>
+          <label htmlFor="ad-upload" className="upload-label" onDrop={handleadsImageDrop} onDragOver={e => e.preventDefault()}>
+            {adsImageValue ? (
+              <img src={adsImageValue} alt="Ad" style={{ maxWidth: 300, maxHeight: 60, display: 'block', margin: '0 auto' }} />
+            ) : (
+              <div className="upload-placeholder">
+                <span role="img" aria-label="camera" className="camera-icon">📷</span>
+                <div>এড ব্যানার আপলোড করুন</div>
+                <div className="formats">JPG, PNG, GIF, BMP, WebP ফরম্যাটের ছবিগুলা সাপোর্ট করবে</div>
+              </div>
+            )}
+            <input
+              id="ad-upload"
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/bmp,image/webp"
+              onChange={handleAdImageChange}
+              ref={adsImageFileInput}
+              style={{ display: "none" }}
+            />
+          </label>
+          <button className="blue-btn" style={{ marginTop: 4 }} onClick={() => adsImageFileInput.current.click()}>এড ব্যানার বেছে নিন</button>
+          {adsImageValue && <button className="clear-btn" style={{ marginLeft: 8 }} onClick={() => setAdImage(null)}>এড ক্লিয়ার করুন</button>}
+          {adsImageError && <div className="error">{adsImageError}</div>}
+        </div>
       </div>
       <div className="editor-section" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <textarea
           className="caption-input"
-          value={caption}
+          value={captionText}
           onChange={e => setCaption(e.target.value)}
           placeholder="ক্যাপশন"
           rows={3}
@@ -261,7 +379,7 @@ function App() {
           <input
             className="date-input"
             type="date"
-            value={date}
+            value={dateText}
             onChange={e => setDate(e.target.value)}
             placeholder="তারিখ"
             style={{ flex: 1, minWidth: 120, fontSize: 18, padding: 8, border: '1px solid #ffd600', borderRadius: 6, fontFamily: "'Tiro Bangla', serif" }}
@@ -269,19 +387,32 @@ function App() {
           <input
             className="credit-input"
             type="text"
-            value={credit}
+            value={creditText}
             onChange={e => setCredit(e.target.value)}
-            placeholder="ফটো ক্রেডিট অথবা বিভাগ দিন"
+            placeholder="সোর্স দিন, যেমন: সুত্র: প্রথমআলো"
             style={{ flex: 1, minWidth: 120, fontSize: 18, padding: 8, border: '1px solid #ffd600', borderRadius: 6, fontFamily: "'Tiro Bangla', serif" }}
           />
         </div>
-        <button className="download-btn" onClick={handleDownload} disabled={!image}>ডাউনলোড করুন</button>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'center', marginTop: 8 }}>
+          <input
+            type="checkbox"
+            id="show-details"
+            checked={showDetails}
+            onChange={e => setShowDetails(e.target.checked)}
+            style={{ marginRight: 6 }}
+          />
+          <label htmlFor="show-details" style={{ fontSize: 18, cursor: 'pointer' }}>বিস্তারিত কমেন্ট দেখাতে চান?</label>
+        </div>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+        
+        <button className="download-btn" onClick={handleDownload} disabled={!newsImageValue}>ডাউনলোড করুন</button>
+        </div>
       </div>
       <div className="card-preview-wrapper" style={{ position: 'relative', width: TEMPLATE_SIZE, height: TEMPLATE_SIZE }}>
-        {/* Uploaded image inside the white box, clipped */}
-        {image && (
+        {/* Uploaded newsImageValue inside the white box, clipped */}
+        {newsImageValue && (
           <img
-            src={image}
+            src={newsImageValue}
             alt="card"
             style={{
               position: 'absolute',
@@ -312,11 +443,62 @@ function App() {
             userSelect: 'none',
           }}
         />
-        {/* Output text preview (caption) */}
+        {/* dateText and creditText at the top */}
+        {creditText ? (
+          <>
+            <div
+              style={{
+                position: 'absolute',
+                left: 32,
+                top: 10,
+                fontFamily: "'Tiro Bangla', serif",
+                fontSize: 16,
+                color: '#222',
+                fontWeight: 700,
+                zIndex: 4,
+                pointerEvents: 'none',
+                background: 'none',
+              }}
+            >তারিখ: {formatBanglaDate(dateText)}
+            </div>
+            <div style={{   
+                position: 'absolute',
+                left: 32,
+                top: 28,
+                fontFamily: "'Tiro Bangla', serif",
+                fontSize: 28,
+                color: '#000',
+                fontWeight: 700,
+                zIndex: 4,
+                pointerEvents: 'none',
+                background: 'none' }}>
+              {creditText}
+            </div>
+          </>
+        ) : (
+          <div
+            style={{
+              position: 'absolute',
+              left: 32,
+              top: 35,
+              fontFamily: "'Tiro Bangla', serif",
+              fontSize: 24,
+              color: '#222',
+              fontWeight: 700,
+              zIndex: 4,
+              pointerEvents: 'none',
+              background: 'none',
+            }}
+          >তারিখ: {formatBanglaDate(dateText)}
+          </div>
+        )}
+        {/* Output text preview (captionText) */}
         <div
           style={{
             position: 'absolute',
-            top: TEXT_AREA_Y,
+            top: (!showDetails && !adsImageValue)
+              ? (BOX_Y + BOX_HEIGHT + (TEMPLATE_SIZE - (BOX_Y + BOX_HEIGHT) - 200) / 2 - 40)
+              : TEXT_AREA_Y,
             left: TEXT_AREA_X,
             width: TEXT_AREA_WIDTH,
             textAlign: 'center',
@@ -327,48 +509,109 @@ function App() {
             pointerEvents: 'none',
           }}
         >
-          <div className="caption" style={{ fontSize: getCaptionFontSize(caption), fontWeight: 700, marginBottom: 8, lineHeight: 1.2, wordBreak: 'break-word' }}>{caption}</div>
+          {(() => {
+            // Visual line splitting for preview
+            const lines = [];
+            const paragraphs = captionText.split('\n');
+            let isFirstVisualLine = true;
+            paragraphs.forEach(paragraph => {
+              const words = paragraph.split(' ');
+              let line = '';
+              words.forEach((word, idx) => {
+                const testLine = line + (line ? ' ' : '') + word;
+                // Create a dummy canvas for measuring
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.font = `bold ${getCaptionCanvasFontSize(captionText)}px Tiro Bangla, serif`;
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > TEXT_AREA_WIDTH && idx > 0) {
+                  lines.push({ text: line, isFirst: isFirstVisualLine });
+                  isFirstVisualLine = false;
+                  line = word;
+                } else {
+                  line = testLine;
+                }
+              });
+              lines.push({ text: line, isFirst: isFirstVisualLine });
+              isFirstVisualLine = false;
+            });
+            return lines.map((line, idx) =>
+              line.isFirst ? (
+                <div key={idx} style={{ fontSize: getCaptionFontSize(captionText), fontWeight: 700, marginBottom: 2, lineHeight: 1.2, wordBreak: 'break-word', color: '#222' }}>{line.text}</div>
+              ) : (
+                <div key={idx} style={{ fontSize: getCaptionFontSize(captionText), fontWeight: 700, marginBottom: 2, lineHeight: 1.2, wordBreak: 'break-word', color: 'red', WebkitTextStroke: '1px #fff', textStroke: '1px #fff' }}>{line.text}</div>
+              )
+            );
+          })()}
         </div>
-        {/* Date at template bottom left */}
-        <div
-          style={{
+        
+        {/* Ads and details logic */}
+        {adsImageValue && showDetails && (
+          <>
+            <div style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 165,
+              width: '100%',
+              textAlign: 'center',
+              fontFamily: "'Tiro Bangla', serif",
+              fontSize: 24,
+              color: '#000',
+              fontWeight: 700,
+              zIndex: 11,
+              pointerEvents: 'none',
+              background: 'none'
+            }}>
+              বিস্তারিত কমেন্টে...
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                bottom: 65,
+                width: TEMPLATE_SIZE,
+                height: 100,
+                objectFit: 'contain',
+                zIndex: 10,
+                pointerEvents: 'none',
+              }}>
+              <img src={adsImageValue} alt="ads" />
+            </div>
+          </>
+        )}
+        {!adsImageValue && showDetails && (
+          <div style={{
             position: 'absolute',
-            left: 32,
-            top: TEMPLATE_SIZE - 48,
+            left: 0,
+            right: 0,
+            bottom: 40,
+            width: '100%',
+            textAlign: 'center',
             fontFamily: "'Tiro Bangla', serif",
-            fontSize: 18,
-            color: '#222',
+            fontSize: 24,
+            color: '#000',
             fontWeight: 700,
-            zIndex: 4,
+            zIndex: 11,
             pointerEvents: 'none',
-            background: 'none',
-          }}
-        >
-          {formatBanglaDate(date)}
-        </div>
-        {/* Photo credit at box bottom left with background and color */}
-        {credit && (
+            background: 'none'
+          }}>
+            বিস্তারিত কমেন্টে...
+          </div>
+        )}
+        {adsImageValue && !showDetails && (
           <div
             style={{
               position: 'absolute',
-              left: BOX_X + 34,
-              top: BOX_Y + BOX_HEIGHT - 40,
-              fontFamily: "'Tiro Bangla', serif",
-              fontSize: 18,
-              color: '#fff',
-              background: 'rgba(0,0,0,0.7)',
-              padding: '4px 16px',
-              borderRadius: 8,
-              zIndex: 4,
+              left: 0,
+              bottom: 65,
+              width: TEMPLATE_SIZE,
+              height: 100,
+              objectFit: 'contain',
+              zIndex: 10,
               pointerEvents: 'none',
-              fontWeight: 700,
-              maxWidth: BOX_WIDTH - 32,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {credit}
+            }}>
+            <img src={adsImageValue} alt="ads" />
           </div>
         )}
       </div>
