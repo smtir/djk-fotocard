@@ -537,9 +537,29 @@ function App() {
             });
             return lines.map((line, idx) =>
               line.isFirst ? (
-                <div key={idx} style={{ fontSize: getCaptionFontSize(captionText), fontWeight: 700, marginBottom: 2, lineHeight: 1.2, wordBreak: 'break-word', color: '#222' }}>{line.text}</div>
+                <div key={idx} style={{ fontSize: getCaptionFontSize(captionText), fontWeight: 700, marginBottom: 2, lineHeight: 1.2, wordBreak: 'break-word', color: '#222', textShadow: `
+                  -1px -1px 0 white,
+                  1px -1px 0 white,
+                  -1px 1px 0 white,
+                  1px 1px 0 white,
+                  0px -1px 0 white,
+                  0px 1px 0 white,
+                  -1px 0px 0 white,
+                  1px 0px 0 white
+                ` }}>{line.text}</div>
               ) : (
-                <div key={idx} style={{ fontSize: getCaptionFontSize(captionText), fontWeight: 700, marginBottom: 2, lineHeight: 1.2, wordBreak: 'break-word', color: 'red', WebkitTextStroke: '1px #fff', textStroke: '1px #fff' }}>{line.text}</div>
+                <div key={idx} style={{ fontSize: getCaptionFontSize(captionText), fontWeight: 700, marginBottom: 2, lineHeight: 1.2, wordBreak: 'break-word', color: 'red', 
+                  textShadow: `
+                    -1px -1px 0 white,
+                    1px -1px 0 white,
+                    -1px 1px 0 white,
+                    1px 1px 0 white,
+                    0px -1px 0 white,
+                    0px 1px 0 white,
+                    -1px 0px 0 white,
+                    1px 0px 0 white
+                  `
+                }}>{line.text}</div>
               )
             );
           })()}
